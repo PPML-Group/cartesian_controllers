@@ -99,6 +99,15 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Cartes
     auto_declare<double>("solver.error_scale", 1.0);
     auto_declare<int>("solver.iterations", 1);
     auto_declare<bool>("solver.publish_state_feedback", false);
+    
+    m_robot_description_subscription = get_node()->create_subscription<std_msgs::msg::String>(
+      "/robot_description", rclcpp::QoS(1).transient_local(),
+      std::bind(&CartesianControllerBase::robot_description_callback, this, std::placeholders::_1)
+    );
+    RCLCPP_INFO(
+      get_node()->get_logger(), "Subscribing to '%s' topic for robot description.",
+      m_robot_description_subscription->get_topic_name());
+
     m_initialized = true;
   }
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
@@ -557,5 +566,18 @@ void CartesianControllerBase::publishStateFeedback()
 
 }
 
+void CartesianControllerBase::robot_description_callback(const std_msgs::msg::String::SharedPtr robot_description)
+{
+  RCLCPP_INFO(get_node()->get_logger(), "Received robot description from topic /robot_description; saving it...");
+  
+  try {
+    std::vector<rclcpp::Parameter> all_new_parameters{rclcpp::Parameter("robot_description", robot_description->data)};
+    get_node()->set_parameters(all_new_parameters);
+  }
+  catch (std::runtime_error & e)
+  {
+    RCLCPP_ERROR_STREAM(get_node()->get_logger(), "Error in handling published robot URDF:" << e.what());
+  }
+};
 
 } // namespace

@@ -50,6 +50,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/wrench_stamped.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <hardware_interface/loaned_command_interface.hpp>
 #include <hardware_interface/loaned_state_interface.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
@@ -236,6 +237,10 @@ class CartesianControllerBase : public controller_interface::ControllerInterface
     // Dynamic parameters
     double m_error_scale;
     std::string m_robot_description;
+
+    // Define a subscriber and a callback to get robot description from robot_state_publisher
+    void robot_description_callback(const std_msgs::msg::String::SharedPtr robot_description);
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr m_robot_description_subscription;
 };
 
 }
