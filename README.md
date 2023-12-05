@@ -6,6 +6,27 @@
 
 ---
 
+This modified version allows to fetch the robot description from the topic /robot_description, published by the robot_state_publisher node. To enable support for Gazebo Ignition, the following code must be present inside your URDF:
+```
+<xacro:if value="$(arg sim_ignition)">
+    <!-- Gazebo plugins -->
+    <gazebo reference="world">
+    </gazebo>
+    <gazebo>
+    <plugin filename="libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+        <parameters>$(arg simulation_controllers)</parameters>
+        <controller_manager_node_name>$(arg tf_prefix)controller_manager</controller_manager_node_name>
+        <ros>
+            <!-- <namespace>/</namespace> -->
+            <remapping>/cartesian_motion_controller/target_frame:=/target_frame</remapping>
+        </ros>
+    </plugin>
+    </gazebo>
+</xacro:if>
+```
+
+---
+
 This is the **ROS2** version of the `cartesian_controllers`.
 Checkout each controller's updated README.md with detailed explanations.
 Any issue, PR, or feedback on *your* special robot and use case is highly appreciated :)
