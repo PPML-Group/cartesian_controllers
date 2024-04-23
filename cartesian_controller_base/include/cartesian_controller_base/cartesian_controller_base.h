@@ -241,6 +241,7 @@ class CartesianControllerBase : public controller_interface::ControllerInterface
     // Define a subscriber and a callback to get robot description from robot_state_publisher
     void robot_description_callback(const std_msgs::msg::String::SharedPtr robot_description);
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr m_robot_description_subscription;
+    bool m_robot_description_flag = false;
 };
 
 }
