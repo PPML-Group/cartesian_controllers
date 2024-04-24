@@ -107,6 +107,10 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Cartes
     RCLCPP_INFO(
       get_node()->get_logger(), "Subscribing to '%s' topic for robot description.",
       m_robot_description_subscription->get_topic_name());
+
+    // Immediately call robot_description_callback to handle the initial robot description
+    robot_description_callback(std::make_shared<std_msgs::msg::String>());
+
     m_initialized = true;
   }
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
@@ -166,13 +170,9 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Cartes
   urdf::Model robot_model;
   KDL::Tree   robot_tree;
 
-  while(m_robot_description.empty())
-  {
-    m_robot_description = get_node()->get_parameter("robot_description").as_string();
-    usleep(1000);
-  }
-  m_robot_description_flag = true;
-  RCLCPP_ERROR(get_node()->get_logger(), "get robot_description");
+  m_robot_description = get_node()->get_parameter("robot_description").as_string();
+  // m_robot_description_flag = true;
+  // RCLCPP_ERROR(get_node()->get_logger(), "get robot_description");
   if (m_robot_description.empty())
   {
     RCLCPP_ERROR(get_node()->get_logger(), "robot_description is empty");
@@ -573,11 +573,7 @@ void CartesianControllerBase::publishStateFeedback()
 
 void CartesianControllerBase::robot_description_callback(const std_msgs::msg::String::SharedPtr robot_description)
 {
-  RCLCPP_INFO(get_node()->get_logger(), "Received robot description from topic /robot_description; saving it...");
-  if (m_robot_description_flag) {
-    return;
-  }
-  
+  RCLCPP_INFO(get_node()->get_logger(), "Received robot description from topic /robot_description; saving it...");  
   try {
     std::vector<rclcpp::Parameter> all_new_parameters{rclcpp::Parameter("robot_description", robot_description->data)};
     get_node()->set_parameters(all_new_parameters);
